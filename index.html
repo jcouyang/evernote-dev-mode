@@ -1,71 +1,255 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <meta charset="utf-8">
-  <title>White Board</title>
-  <link href="//getbootstrap.com/dist/css/bootstrap.min.css" media="all" rel="stylesheet" type="text/css"/>
-  <link href="css/white-board.css" media="all" rel="stylesheet"
-  type="text/css"/>
-<link rel="stylesheet" href="pen/src/pen.css" type="text/css" media="screen" />
-  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
-<script type="text/javascript" src="http://getbootstrap.com/dist/js/bootstrap.js"></script>
-  <script src="js/underscore-1.1.6.js"></script>
-  <script src="//www.parsecdn.com/js/parse-1.1.15.min.js"></script>
-  <script src="js/wb.min.js"></script>
-<!-- <script type="text/javascript" src="pen/src/pen.js"></script> -->
-<!-- <script type="text/javascript" src="pen/src/markdown.js"></script> -->
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <link href='https://fonts.googleapis.com/css?family=Chivo:900' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print" />
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <title>Evernote-dev-mode by jcouyang</title>
+  </head>
 
-<script type="text/javascript">
-$(function(){
- var options = {
-    editor: document.querySelector('article'),
-    debug: true
-  };
-var pen = new Pen(options)
-pen.rebuild();
-})
- 
-</script>
-</head>
+  <body>
+    <div id="container">
+      <div class="inner">
 
-<body>
+        <header>
+          <h1>Evernote-dev-mode</h1>
+          <h2>evernote mode for emacs which using developer key for auth.</h2>
+        </header>
 
-<div id="white-board">
-  <div class="page-header">
-      <h1>White Board</h1>
-    </div>
-<div class="alert alert-success fade in" style="display:none;">
-        <strong>Holy Saved!</strong> Well done!
- </div>
-<div class="guide">
-  </div>
+        <section id="downloads" class="clearfix">
+          <a href="https://github.com/jcouyang/evernote-dev-mode/zipball/master" id="download-zip" class="button"><span>Download .zip</span></a>
+          <a href="https://github.com/jcouyang/evernote-dev-mode/tarball/master" id="download-tar-gz" class="button"><span>Download .tar.gz</span></a>
+          <a href="https://github.com/jcouyang/evernote-dev-mode" id="view-on-github" class="button"><span>View on GitHub</span></a>
+        </section>
 
-  <div class="white-board">
+        <hr>
 
-  </div>
-  </div>
+        <section id="main_content">
+          <p>
+<a href="http://code.google.com/p/emacs-evernote-mode/">evernote</a>-mode 使得emacs用户可用直接用 orgmode 记笔记. here is how:
+</p>
 
-  
+<div>
+<h2>
+<a name="1-install-evernote-mode" class="anchor" href="#1-install-evernote-mode"><span class="octicon octicon-link"></span></a>1 Install evernote-mode</h2>
+<div>
+</div>
+<div>
+<h3>
+<a name="11-install-libgdbm" class="anchor" href="#11-install-libgdbm"><span class="octicon octicon-link"></span></a>1.1 Install libgdbm</h3>
+<div>
+<p>
+The pre-installed ruby on Mac OS X does not contain GDBM bindings. Re-install ruby and GDBM by
+</p>
+<div>
+
+<pre>rvm uninstall 1.9.3
+brew install gdbm
+rvm install 1.9.3
+</pre>
 </div>
 
-<script type="text/template" id="white-board-template">
-    <article id="content">type your thing here</article>
-  <button id="update" class="btn btn-lg btn-primary">Post</button>
+<p></p>
+</div>
+</div>
 
-</script>
+<div>
+<h3>
+<a name="12-install-evernote-mode-ruby-script" class="anchor" href="#12-install-evernote-mode-ruby-script"><span class="octicon octicon-link"></span></a>1.2 Install evernote-mode ruby script</h3>
+<div>
+<div>
+
+<pre>cd evernote-mode/ruby
+ruby setup.rb
+cp evernote-mode.el &lt;your emacs lisp load path&gt;
+</pre>
+</div>
+
+<p></p>
+</div>
+</div>
+
+<div>
+<h3>
+<a name="13-setup-your-evernote-mode" class="anchor" href="#13-setup-your-evernote-mode"><span class="octicon octicon-link"></span></a>1.3 Setup your evernote-mode</h3>
+<div>
+<p>
+first you need to change the way your evernote login
+<a href="https://github.com/kechako/emacs-evernote-mode-developer-token">https://github.com/kechako/emacs-evernote-mode-developer-token</a>
+</p>
+
+<p>
+using developer token will be much more awesomer
+</p>
+<div>
+
+<pre>diff --git a/evernote-mode.el b/evernote-mode.el
+index 313a1dc..e434841 100644
+--- a/evernote-mode.el
++++ b/evernote-mode.el
+@@ -162,6 +162,9 @@
+   "*Non-nil means that password cache is enabled.
+ It is recommended to encrypt the file with EasyPG.")
+
++(defvar evernote-developer-token nil
++  "*An developer token of your evernote")
++
+ ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ ;; Interface for evernote-browsing-mode.
+ ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+@@ -550,6 +553,8 @@ It is recommended to encrypt the file with EasyPG.")
+   "Login"
+   (interactive)
+   (if (called-interactively-p) (enh-clear-onmem-cache))
++  (if evernote-developer-token
++      (enh-command-login-token evernote-developer-token) 
+     (unwind-protect
+         (let* ((cache (enh-password-cache-load))
+                (usernames (mapcar #'car cache))
+@@ -567,7 +572,7 @@ It is recommended to encrypt the file with EasyPG.")
+               (enh-command-login username passwd)
+               (setq evernote-username username)
+               (enh-password-cache-save (enutil-aset username cache passwd)))))
+-    (enh-password-cache-close)))
++      (enh-password-cache-close))))
 
 
-<script type="text/template" id="guide-template">
-  <article>
-    <poem>
-    横看成岭侧成峰,<br>
-    远近高低各不同.<br>
-    不识卢山真面目,<br>
-    只缘身在此山中.<br>
-    </poem>
-  </article>
-</script>
+ (defun evernote-open-note (&amp;optional ask-notebook)
+@@ -1769,6 +1774,14 @@ It is recommended to encrypt the file with EasyPG.")
+            (enutil-to-ruby-string passwd))))
 
-</body>
 
++(defun enh-command-login-token (token)
++  "Issue login command"
++  (enh-command-issue
++   (format ":class =&gt; %s, :auth_token =&gt; %s"
++           (enutil-to-ruby-string "AuthCommand")
++           (enutil-to-ruby-string token))))
++
++
+ (defun enh-command-get-notebook-attrs ()
+   "Issue listnotebooks command"
+   (let ((reply (enh-command-issue
+diff --git a/ruby/bin/enclient.rb b/ruby/bin/enclient.rb
+index 9067bad..a13ae8a 100755
+--- a/ruby/bin/enclient.rb
++++ b/ruby/bin/enclient.rb
+@@ -426,13 +426,17 @@ module EnClient
+
+
+   class AuthCommand &lt; Command
+-    attr_accessor :user, :passwd
++    attr_accessor :user, :passwd, :auth_token
+
+     def exec_impl
+-      Formatter.to_ascii @user, @passwd
++      Formatter.to_ascii @user, @passwd, @auth_token
+
+       server_task do
++        if @auth_token
++          sm.authenticate_with_token @auth_token
++        else
+           sm.authenticate @user, @passwd
++        end
+         LOG.info "Auth successed: auth_token = '#{sm.auth_token}', shared_id = '#{sm.shared_id}'"
+         tm.put SyncTask.new(sm, dm, tm)
+         server_task true do # defer reply until first sync will be done.
+@@ -1175,6 +1179,15 @@ module EnClient
+       @note_store = create_note_store @shared_id
+     end
+
++    def authenticate_with_token(token)
++      @user_store = create_user_store
++      user = @user_store.getUser token
++      @auth_token = token
++      @shared_id = user.shardId if user
++      @expiration = 60 * 60 * 24 * 365
++      @note_store = create_note_store @shared_id
++    end
++
+     def refresh_authentication(current_time)
+       if current_time &gt; @expiration - REFRESH_LIMIT_SEC * 1000
+         LOG.info "refresh authentication"
+</pre>
+</div>
+
+<p>
+get developer token from
+<a href="https://www.evernote.com/api/DeveloperToken.action">https://www.evernote.com/api/DeveloperToken.action</a>
+</p>
+
+<p>
+then paste it to starter-kit-evernote
+</p>
+
+<div>
+
+<pre>(require 'evernote-mode)
+(setq evernote-developer-token "paste your token here")
+(setq evernote-enml-formatter-command '("w3m" "-dump" "-I" "UTF8" "-O" "UTF8")) ; optional
+(global-set-key "\C-cn" 'evernote-write-note)
+(provide 'starter-kit-evernote)
+</pre>
+</div>
+
+<p></p>
+</div>
+</div>
+
+<div>
+<h3>
+<a name="14-write-note-with-orgmode" class="anchor" href="#14-write-note-with-orgmode"><span class="octicon octicon-link"></span></a>1.4 write note with orgmode</h3>
+<div>
+<ul>
+<li>随便开个orgmode
+</li>
+<li>用orgmode写完笔记以后 <code>C-c C-e t U</code> // 输出为utf-8文本
+</li>
+<li>
+<code>C-c n</code> // evernote buffer
+</li>
+<li>will create in evernote like this
+</li>
+</ul>
+<div>
+<p><img src="https://www.evernote.com/shard/s23/sh/e13e664c-2d1e-4a8b-9597-c062759b6732/19a4bd09e50725674caa5b17d7ee7655/deep/0/Screenshot%206/25/13%205:18%20PM.png" alt="13%205:18%20PM.png"></p>
+</div>
+
+<blockquote>
+<p>
+take note this way is awesome isn't it
+</p>
+</blockquote>
+
+<p></p>
+</div>
+</div>
+</div>
+        </section>
+
+        <footer>
+          Evernote-dev-mode is maintained by <a href="https://github.com/jcouyang">jcouyang</a><br>
+          This page was generated by <a href="http://pages.github.com">GitHub Pages</a>. Tactile theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.
+        </footer>
+
+                  <script type="text/javascript">
+            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+          </script>
+          <script type="text/javascript">
+            try {
+              var pageTracker = _gat._getTracker("UA-32314154-1");
+            pageTracker._trackPageview();
+            } catch(err) {}
+          </script>
+
+      </div>
+    </div>
+  </body>
 </html>
