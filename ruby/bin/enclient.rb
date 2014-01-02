@@ -1,4 +1,4 @@
-#! /usr/bin/ruby1.8 -sWKu
+#! /Users/twer/.rvm/rubies/ruby-1.9.3-p392/bin/ruby -sWKu
 # -*- coding: utf-8 -*-
 
 #
@@ -44,7 +44,7 @@ require "Evernote/EDAM/user_store"
 require "Evernote/EDAM/user_store_constants"
 require "Evernote/EDAM/note_store"
 require "Evernote/EDAM/limits_constants"
-
+require "sanitize"
 
 module EnClient
   module Serializable
@@ -289,8 +289,8 @@ module EnClient
       #http.verify_mode = OpenSSL::SSL::VERIFY_PEER
       #http.verify_depth = 5
       http.verify_mode = OpenSSL::SSL::VERIFY_NONE
-      resp, data = http.post(@url.request_uri, @outbuf, @headers)
-      @inbuf = StringIO.new data
+      resp = http.post(@url.request_uri, @outbuf, @headers)
+      @inbuf = StringIO.new resp.body
       @outbuf = ""
     end
   end
@@ -426,13 +426,16 @@ module EnClient
 
 
   class AuthCommand < Command
-    attr_accessor :user, :passwd
-
+    attr_accessor :user, :passwd, :auth_token
     def exec_impl
-      Formatter.to_ascii @user, @passwd
-
+      Formatter.to_ascii @user, @passwd, @auth_token
       server_task do
-        sm.authenticate @user, @passwd
+        LOG.info "authentication with #{@auth_token}"
+        if @auth_token
+          sm.authenticate_with_token @auth_token
+        else
+          sm.authenticate @user, @passwd
+        end
         LOG.info "Auth successed: auth_token = '#{sm.auth_token}', shared_id = '#{sm.shared_id}'"
         tm.put SyncTask.new(sm, dm, tm)
         server_task true do # defer reply until first sync will be done.
@@ -455,6 +458,7 @@ module EnClient
         note.content = to_xhtml note.content if note.content
         note.attributes.sourceApplication = APPLICATION_NAME_TEXT
       elsif note.editMode == "XHTML"
+        note.content = clean_html note.content if note.content
         note.attributes.sourceApplication = APPLICATION_NAME_XHTML
       end
     end
@@ -464,6 +468,77 @@ module EnClient
       content.gsub! %r{ }, %{&nbsp;}
         content.gsub! %r{(?:\r\n)|\n|\r}, %|<br clear="none"/>|
         content = NOTE_DEFAULT_HEADER + content + NOTE_DEFAULT_FOOTER
+    end
+
+    
+    def clean_html(content)
+     content = Sanitize.clean(content, :elements => %w[
+    a
+    abbr
+    acronym
+    address
+    area
+    b
+    bdo
+    big
+    blockquote
+    br
+    caption
+    center
+    cite
+    code
+    col
+    colgroup
+    dd
+    del
+    dfn
+    div
+    dl
+    dt
+    em
+    font
+    h1
+    h2
+    h3
+    h4
+    h5
+    h6
+    hr
+    i
+    img
+    ins
+    kbd
+    li
+    map
+    ol
+    p
+    pre
+    q
+    s
+    samp
+    small
+    span
+    strike
+    strong
+    sub
+    sup
+    table
+    tbody
+    td
+    tfoot
+    th
+    thead
+    title
+    tr
+    tt
+    u
+    ul
+    var
+    xmp
+
+],:attributes => {:all => ['style']}
+                     )
+    content = NOTE_DEFAULT_HEADER + content + NOTE_DEFAULT_FOOTER
     end
   end
 
@@ -1172,6 +1247,16 @@ module EnClient
       @user_store = create_user_store
       auth_result = @user_store.authenticate user, passwd, appname, appid
       @auth_token, @shared_id, @expiration = get_session auth_result
+      @note_store = create_note_store @shared_id
+    end
+
+    def authenticate_with_token(token)
+      LOG.info "authentication with token"
+      @user_store = create_user_store
+      user = @user_store.getUser token
+      @auth_token = token
+      @shared_id = user.shardId if user
+      @expiration = 60 * 60 * 24 * 365
       @note_store = create_note_store @shared_id
     end
 
